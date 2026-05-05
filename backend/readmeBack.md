@@ -1,5 +1,3 @@
-Вот исправленная и красиво отформатированная версия твоего README в одном чистом Markdown-блоке:
-
 # NotifyService
 
 Сервис асинхронной отправки уведомлений пользователям.
@@ -29,16 +27,16 @@
 
 ```json
 {
-  "user_id": 1,
-  "channel": "email",
-  "recipient": "user@example.com",
-  "message": "Привет! Это тестовое уведомление."
+  "user_id": 42,
+  "channel": "telegram",
+  "message": "Привет я NotifyService bot, как дела?"
 }
 ```
 
 **Поддерживаемые каналы (`channel`):**
 - `email`
 - `telegram`
+- `sms`
 
 ## Структура проекта
 

@@ -41,35 +41,35 @@ graph LR
 
 **Таблица: `users`**
 
-| Поле               | Тип            | Ограничения                                   | Описание                         |
-| ------------------ | -------------- | --------------------------------------------- | -------------------------------- |
-| `id`               | `BIGINT`       | `PRIMARY KEY`, `GENERATED ALWAYS AS IDENTITY` | Уникальный ID                    |
-| `full_name`        | `VARCHAR(100)` | `NOT NULL`                                    | Имя пользователя                 |
-| `email`            | `VARCHAR(255)` | `NOT NULL`, `UNIQUE`                          | Почта (для логина и уведомлений) |
-| `password_hash`    | `VARCHAR(255)` | `NOT NULL`                                    | Хеш пароля (bcrypt/argon2)       |
-| `telegram_chat_id` | `VARCHAR(100)` |                                               | ID для отправки в Telegram       |
-| `phone`            | `VARCHAR(20)`  |                                               | Номер для SMS                    |
-| `is_active`        | `BOOLEAN`      | `DEFAULT TRUE`                                | Активен ли пользователь          |
-| `created_at`       | `TIMESTAMPTZ`  | `DEFAULT NOW()`                               | Время создания                   |
-| `updated_at`       | `TIMESTAMPTZ`  | `DEFAULT NOW()`                               | Время обновления                 |
+| Поле              | Тип              | Ограничения                                      | Описание                                      |
+|-------------------|------------------|--------------------------------------------------|-----------------------------------------------|
+| `id`              | BIGINT           | PRIMARY KEY, GENERATED ALWAYS AS IDENTITY       | Уникальный ID                                 |
+| `full_name`       | VARCHAR(100)     | NOT NULL                                         | Имя пользователя                              |
+| `email`           | VARCHAR(255)     | NOT NULL, UNIQUE                                 | Почта (для логина и уведомлений)              |
+| `password_hash`   | VARCHAR(255)     | NOT NULL                                         | Хеш пароля (bcrypt/argon2)                    |
+| `telegram_chat_id`| VARCHAR(100)     | UNIQUE                                           | ID для отправки в Telegram (nullable)         |
+| `phone`           | VARCHAR(20)      | UNIQUE                                           | Номер для SMS (nullable)                      |
+| `is_active`       | BOOLEAN          | NOT NULL, DEFAULT TRUE                           | Активен ли пользователь                       |
+| `created_at`      | TIMESTAMPTZ      | NOT NULL, DEFAULT NOW()                          | Время создания                                |
+| `updated_at`      | TIMESTAMPTZ      | NOT NULL, DEFAULT NOW()                          | Время обновления                              |
 
 **Таблица: `notifications`**
 
-| Поле            | Тип            | Ограничения                                    | Описание                              |
-| --------------- | -------------- | ---------------------------------------------- | ------------------------------------- |
-| `id`            | `BIGINT`       | `PRIMARY KEY`, `GENERATED ALWAYS AS IDENTITY`  | Уникальный ID                         |
-| `user_id`       | `BIGINT`       | `NOT NULL`, `FOREIGN KEY REFERENCES users(id)` | Ссылка на пользователя                |
-| `recipient`     | `VARCHAR(255)` | `NOT NULL`                                     | Конкретный получатель (email/chat_id) |
-| `channel`       | `VARCHAR(20)`  | `NOT NULL`                                     | Тип: `email`, `telegram`, `sms`       |
-| `message`       | `TEXT`         | `NOT NULL`                                     | Текст сообщения                       |
-| `status`        | `VARCHAR(20)`  | `NOT NULL`, `DEFAULT 'pending'`                | `pending`, `sent`, `failed`           |
-| `attempt_count` | `INT`          | `DEFAULT 0`                                    | Количество попыток отправки           |
-| `error_message` | `TEXT`         |                                                | Текст ошибки, если статус `failed`    |
-| `external_id`   | `VARCHAR(255)` |                                                | ID сообщения у провайдера             |
-| `created_at`    | `TIMESTAMPTZ`  | `DEFAULT NOW()`                                | Время создания                        |
-| `updated_at`    | `TIMESTAMPTZ`  | `DEFAULT NOW()`                                | Время обновления                      |
-
+| Поле             | Тип                    | Ограничения                                              | Описание                                           |
+|------------------|------------------------|----------------------------------------------------------|----------------------------------------------------|
+| `id`             | BIGINT                 | PRIMARY KEY, GENERATED ALWAYS AS IDENTITY               | Уникальный ID                                      |
+| `user_id`        | BIGINT                 | NOT NULL, FK → `users(id)`                               | Ссылка на пользователя                             |
+| `recipient`      | VARCHAR(255)           | NOT NULL                                                 | Конкретный получатель (email/чат/телефон)          |
+| `channel`        | notification_channel   | NOT NULL                                                 | Custom ENUM: email, telegram, sms                  |
+| `message`        | TEXT                   | NOT NULL                                                 | Текст сообщения                                    |
+| `status`         | notification_status    | NOT NULL, DEFAULT 'pending'                              | Custom ENUM: pending, sent, failed                 |
+| `attempt_count`  | SMALLINT               | NOT NULL, DEFAULT 0, CHECK (attempt_count >= 0)         | Количество попыток отправки                        |
+| `error_message`  | TEXT                   | —                                                        | Текст ошибки, если статус failed                   |
+| `external_id`    | VARCHAR(255)           | UNIQUE                                                   | ID сообщения у провайдера (для идемпотентности)    |
+| `created_at`     | TIMESTAMPTZ            | NOT NULL, DEFAULT NOW()                                  | Время создания                                     |
+| `updated_at`     | TIMESTAMPTZ            | NOT NULL, DEFAULT NOW()                                  | Время обновления                                   |
 ---
+
 ## 5. Логика работы (Business Logic)
 
 ### API Service
@@ -91,52 +91,23 @@ graph LR
     *   Отправить `ACK` в RabbitMQ (подтвердить обработку).
 5.  **Ошибка:**
     *   Увеличить `attempt_count`.
-    *   Если попыток < 3 → Отправить `NACK` с повторной постановкой в очередь (Requeue).
-    *   Если попыток >= 3 → Обновить статус в БД на `failed`, отправить `ACK` (чтобы убрать из очереди, но не терять лог).
+    *   Если попыток < 5 → Отправить `NACK` с повторной постановкой в очередь (Requeue).
+    *   Если попыток >= 5 → Обновить статус в БД на `failed`, отправить `ACK` (чтобы убрать из очереди, но не терять лог).
 
 ---
 ## 6. Требования к реализации
 
-### 6.1. Конфигурация
-*   Все настройки (порты, строки подключения к БД, RabbitMQ, токены телеграма) должны выноситься в **переменные окружения (.env)**.
-### 6.2. Логирование
+### 6.1. Логирование
 *   Использовать структурированный логгер (например, `zap` или `logrus`).
 *   Логировать: начало обработки, успех, ошибку (с текстом ошибки).
 *   Пример лога: `{"level": "error", "msg": "failed to send telegram", "error": "timeout", "id": "uuid..."}`
 
-### 6.3. Graceful Shutdown
-*   При остановке приложения (Ctrl+C) воркер должен корректно завершить текущую задачу и закрыть соединения с БД и RabbitMQ.
-
-### 6.4. Docker Compose
+### 6.2. Docker Compose
 *   Проект должен подниматься одной командой: `docker-compose up`.
 *   В compose файле должны быть сервисы: `api`, `worker`, `postgres`, `rabbitmq`.
 
 ---
 
-## 7. План разработки (Чек-лист)
-
-- [ ] **Подготовка:**
-    - [ ] Инициализировать Go модуль.
-    - [ ] Написать `docker-compose.yml` для БД и RabbitMQ.
-    - [ ] Поднять контейнеры, проверить доступность.
-- [ ] **База данных:**
-    - [ ] Написать SQL миграцию для таблицы `notifications`.
-    - [ ] Реализовать подключение к БД в Go.
-- [ ] **API Service:**
-    - [ ] Сделать HTTP сервер.
-    - [ ] Реализовать endpoint `/notify`.
-    - [ ] Настроить подключение к RabbitMQ (Publisher).
-    - [ ] Настроить запись в БД.
-- [ ] **Worker Service:**
-    - [ ] Настроить подключение к RabbitMQ (Consumer).
-    - [ ] Реализовать логику отправки в Telegram (можно мокать/заглушку).
-    - [ ] Реализовать логику отправки Email (можно логировать в консоль для теста).
-    - [ ] Настроить обновление статуса в БД.
-- [ ] **Надежность:**
-    - [ ] Добавить счетчик попыток (Retry logic).
-    - [ ] Добавить обработку ошибок (чтобы воркер не падал при ошибке отправки).
-    - [ ] Реализовать Graceful Shutdown.
-- [ ] **Финал:**
-    - [ ] Написать README (как запустить, какие env переменные нужны).
-    - [ ] Почистить код (linters).
+**Для разработчиков:**  
+Подробная техническая документация, архитектура и чек-лист разработки находятся в файле [`backend/readmeBack.md`](backend/readmeBack.md).
 

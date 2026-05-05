@@ -1,29 +1,135 @@
-# Binaries for programs and plugins
+# ==================== ENV & SECRETS ====================
+# Основные секреты
+.env
+.env.local
+.env.*.local
+*.env
+*.local
+
+# Docker/K8s специфичные
+docker-compose.override.yml
+docker-compose.local.yml
+k8s/overrides/
+k8s/local/
+values.local.yaml
+values.override.yaml
+*.kubeconfig
+kubeconfig.local
+
+
+# ==================== DOCKER ====================
+# Артефакты сборки
+*.tar
+*.tar.gz
+*.zip
+docker-artifacts/
+
+# Кэш и временные файлы
+**/.docker-cache/
+**/.build-cache/
+.docker/
+docker-data/
+
+# Образы (если экспортируешь вручную)
+*.dockerimage
+image-export/
+
+
+# ==================== KUBERNETES ====================
+# Сгенерированные манифесты (kustomize, helm template)
+k8s/generated/
+manifests/output/
+dist/
+deploy/generated/
+
+# Локальные конфиги кластеров
+.minikube/
+.kind/
+.tmp-k8s/
+
+# Результаты команд (если сохраняешь)
+*.log
+kubectl-debug.log
+helm-debug.log
+
+# Плагины kubectl
+~/.kube/plugins/
+
+
+# ==================== GO ====================
+# Бинарники
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+bin/
+dist/
 
-# Test binary, built with `go test -c`
-*.test
+# Тестовые артефакты
+coverage.out
+coverage.html
+test-results/
 
-# Code coverage profiles and other test artifacts
-*.out
-coverage.*
-*.coverprofile
-profile.cov
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
+# Зависимости
+vendor/
 go.work
 go.work.sum
 
-# env file
-.env
 
-# Editor/IDE
+# ==================== IDE & EDITOR ====================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# GoLand / IntelliJ
 .idea/
-.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Vim / Neovim
+*.swp
+*.swo
+*.swn
+*.bak
+*~
+/.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+
+# ==================== LOGS & TEMP ====================
+# Логи приложения
+*.log
+logs/
+tmp/
+temp/
+
+# Профайлинг
+*.pprof
+*.trace
+cpu.prof
+mem.prof
+
+
+# ==================== CI/CD ====================
+# Локальные кэши действий
+.github/actions/cache/
+.gitlab-ci/local/
+
+# Артефакты сборки (если не публикуешь)
+artifacts/
+build-output/

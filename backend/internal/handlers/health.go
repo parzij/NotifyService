@@ -1,8 +1,8 @@
+// Package handlers for HTTP routing
 package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	
 )
 
 func Health(c *gin.Context) {

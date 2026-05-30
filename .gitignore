@@ -65,6 +65,7 @@ helm-debug.log
 *.dylib
 bin/
 dist/
+go.work.sum
 
 # Тестовые артефакты
 coverage.out

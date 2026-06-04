@@ -1,0 +1,41 @@
+@host = http://127.0.0.1:3030
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImthcmluYUBnb29nbGUuY29tIiwiZXhwIjoxNzgwNjgzNzY4LCJpYXQiOjE3ODA1OTczNjgsInVzZXJfaWQiOjJ9.dUsUrnTLO2YWJ9AtLcIAaB5aNOfVGjCWnkzUVKSVdhQ
+
+### Register user
+POST {{host}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Pro Parzij",
+  "email": "parzij@google.com",
+  "password": "qwerty12345"
+}
+
+
+### Login user
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "karina@google.com",
+  "password": "qwerty123"
+}
+
+
+### Update phone
+PATCH {{host}}/api/v1/user/phone
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "phone": "+79991234569"
+}
+
+### Update telegram chat id
+PATCH {{host}}/api/v1/user/telegram
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "telegram_chat_id": "@karina"
+}

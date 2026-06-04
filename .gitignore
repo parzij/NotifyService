@@ -134,3 +134,5 @@ mem.prof
 # Артефакты сборки (если не публикуешь)
 artifacts/
 build-output/
+
+/backend/requests.http

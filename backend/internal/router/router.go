@@ -14,4 +14,9 @@ func Router(r *gin.Engine, authHandler *handlers.AuthHandler) {
 	auth := api.Group("/auth")
 	auth.POST("/register", authHandler.Register)
 	auth.POST("/login", authHandler.Login)
+
+	user := api.Group("/user")
+	user.Use(authHandler.AuthMiddleware())
+	user.PATCH("/phone", authHandler.UpdatePhone)
+	user.PATCH("/telegram", authHandler.UpdateTelegramID)
 }

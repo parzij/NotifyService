@@ -40,7 +40,7 @@ func (h *AuthHandler) UpdatePhone(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *AuthHandler) UpdateTelegramID(c *gin.Context) {
+func (h *AuthHandler) UpdateTelegram(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 
 	if !ok {
@@ -54,12 +54,12 @@ func (h *AuthHandler) UpdateTelegramID(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.authService.UpdateTelegramID(c.Request.Context(), userID, req)
+	resp, err := h.authService.UpdateTelegram(c.Request.Context(), userID, req)
 	if err != nil {
 		switch {
 		case errors.Is(err, services.ErrMissngFields):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		case errors.Is(err, services.ErrContactAlreadyUsed), errors.Is(err, services.ErrContactTelegramChatIDAlreadyUsed):
+		case errors.Is(err, services.ErrContactAlreadyUsed), errors.Is(err, services.ErrContactTelegramAlreadyUsed):
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		case errors.Is(err, repository.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

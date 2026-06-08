@@ -1,14 +1,15 @@
 @host = http://127.0.0.1:3030
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImthcmluYUBnb29nbGUuY29tIiwiZXhwIjoxNzgwNjgzNzY4LCJpYXQiOjE3ODA1OTczNjgsInVzZXJfaWQiOjJ9.dUsUrnTLO2YWJ9AtLcIAaB5aNOfVGjCWnkzUVKSVdhQ
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBhcnppai5zbGF2YUBnb29nbGUuY29tIiwiZXhwIjoxNzgwOTk2MTQwLCJpYXQiOjE3ODA5MDk3NDAsInVzZXJfaWQiOjZ9.MLeWvUPg5pLK-VXyYSQyNSVIlhd-Br_MOH9Nl9FICGA
 
 ### Register user
 POST {{host}}/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "full_name": "Pro Parzij",
-  "email": "parzij@google.com",
-  "password": "qwerty12345"
+  "full_name": "Slava Parzij",
+  "email": "parzij.slava@google.com",
+  "password": "qwertyuiop!",
+  "phone": "+79518373444"
 }
 
 
@@ -17,8 +18,8 @@ POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "karina@google.com",
-  "password": "qwerty123"
+  "email": "parzij.slava@google.com",
+  "password": "qwertyuiop!"
 }
 
 
@@ -28,14 +29,14 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "phone": "+79991234569"
+  "phone": "+79991236969"
 }
 
-### Update telegram chat id
+### Update telegram
 PATCH {{host}}/api/v1/user/telegram
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "telegram_chat_id": "@karina"
+  "telegram": "@parzij"
 }

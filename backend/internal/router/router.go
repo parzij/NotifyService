@@ -18,5 +18,5 @@ func Router(r *gin.Engine, authHandler *handlers.AuthHandler) {
 	user := api.Group("/user")
 	user.Use(authHandler.AuthMiddleware())
 	user.PATCH("/phone", authHandler.UpdatePhone)
-	user.PATCH("/telegram", authHandler.UpdateTelegramID)
+	user.PATCH("/telegram", authHandler.UpdateTelegram)
 }

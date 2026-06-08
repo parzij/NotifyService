@@ -3,11 +3,11 @@ package dto
 import "NotifyService/internal/models"
 
 type RegisterRequest struct {
-	FullName       string  `json:"full_name"`
-	Email          string  `json:"email"`
-	Password       string  `json:"password"`
-	TelegramChatID *string `json:"telegram_chat_id"`
-	Phone          *string `json:"phone"`
+	FullName string  `json:"full_name"`
+	Email    string  `json:"email"`
+	Password string  `json:"password"`
+	Telegram *string `json:"telegram"`
+	Phone    *string `json:"phone"`
 }
 
 type RegisterResponse struct {
@@ -34,7 +34,7 @@ type PhoneResponse struct {
 }
 
 type TelegramRequest struct {
-	TelegramChatID string `json:"telegram_chat_id"`
+	Telegram string `json:"telegram"`
 }
 
 type TelegramResponse struct {

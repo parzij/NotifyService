@@ -102,11 +102,11 @@ func (s *AuthService) Register(ctx context.Context, req dto.RegisterRequest) (*d
 	}
 
 	user := &models.User{
-		FullName:       req.FullName,
-		Email:          strings.ToLower(req.Email),
-		PasswordHash:   passwordHash,
-		TelegramChatID: req.TelegramChatID,
-		Phone:          req.Phone,
+		FullName:     req.FullName,
+		Email:        strings.ToLower(req.Email),
+		PasswordHash: passwordHash,
+		Telegram:     req.Telegram,
+		Phone:        req.Phone,
 	}
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {

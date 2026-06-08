@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	ErrContactPhoneAlreadyUsed          = errors.New("contact phone already used")
-	ErrContactTelegramChatIDAlreadyUsed = errors.New("contact telegram chat id already used")
+	ErrContactPhoneAlreadyUsed    = errors.New("contact phone already used")
+	ErrContactTelegramAlreadyUsed = errors.New("contact telegram already used")
 )
 
 func (s *AuthService) UpdatePhone(ctx context.Context, userID int64, req dto.PhoneRequest) (*dto.PhoneResponse, error) {
@@ -46,18 +46,18 @@ func (s *AuthService) UpdatePhone(ctx context.Context, userID int64, req dto.Pho
 	return &dto.PhoneResponse{User: *user}, nil
 }
 
-func (s *AuthService) UpdateTelegramID(ctx context.Context, userID int64, req dto.TelegramRequest) (*dto.TelegramResponse, error) {
-	telegramChatID := strings.TrimSpace(req.TelegramChatID)
+func (s *AuthService) UpdateTelegram(ctx context.Context, userID int64, req dto.TelegramRequest) (*dto.TelegramResponse, error) {
+	telegram := strings.TrimSpace(req.Telegram)
 
-	if telegramChatID == "" {
+	if telegram == "" {
 		return nil, ErrMissngFields
 	}
 
-	user, err := s.repo.UpdateTelegramChatID(ctx, userID, telegramChatID)
+	user, err := s.repo.UpdateTelegram(ctx, userID, telegram)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, ErrContactTelegramChatIDAlreadyUsed
+			return nil, ErrContactTelegramAlreadyUsed
 		}
 
 		if errors.Is(err, repository.ErrUserNotFound) {
@@ -65,7 +65,7 @@ func (s *AuthService) UpdateTelegramID(ctx context.Context, userID int64, req dt
 		}
 
 		s.logger.Error(
-			"failed to update telegram id",
+			"failed to update telegram",
 			slog.String("error", err.Error()),
 			slog.Int64("user_id", userID),
 		)

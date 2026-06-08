@@ -14,8 +14,8 @@ var ErrUserNotFound = errors.New("user not found")
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *models.User) error
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	UpdatePhone(ctx context.Context, userId int64, phone string) (*models.User, error)
-	UpdateTelegramChatID(ctx context.Context, userId int64, telegramChatID string) (*models.User, error)
+	UpdatePhone(ctx context.Context, userID int64, phone string) (*models.User, error)
+	UpdateTelegram(ctx context.Context, userID int64, telegram string) (*models.User, error)
 }
 
 type userRepo struct {
@@ -28,7 +28,7 @@ func NewUserRepo(db *pgxpool.Pool) UserRepository {
 
 func (r *userRepo) CreateUser(ctx context.Context, user *models.User) error {
 	query := `
-		INSERT INTO users (full_name, email, password_hash, telegram_chat_id, phone)
+		INSERT INTO users (full_name, email, password_hash, telegram, phone)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, updated_at;
 	`
@@ -37,14 +37,14 @@ func (r *userRepo) CreateUser(ctx context.Context, user *models.User) error {
 		user.FullName,
 		user.Email,
 		user.PasswordHash,
-		user.TelegramChatID,
+		user.Telegram,
 		user.Phone,
 	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 }
 
 func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	query := `
-		SELECT id, full_name, email, password_hash, telegram_chat_id, phone, created_at, updated_at
+		SELECT id, full_name, email, password_hash, telegram, phone, created_at, updated_at
 		FROM users
 		WHERE email = $1;
 	`
@@ -55,7 +55,7 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*models.Us
 		&user.FullName,
 		&user.Email,
 		&user.PasswordHash,
-		&user.TelegramChatID,
+		&user.Telegram,
 		&user.Phone,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -70,23 +70,23 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*models.Us
 	return user, nil
 }
 
-func (r *userRepo) UpdatePhone(ctx context.Context, userId int64, phone string) (*models.User, error) {
+func (r *userRepo) UpdatePhone(ctx context.Context, userID int64, phone string) (*models.User, error) {
 	query := `
 		UPDATE users 
 		SET phone = $1,
 		    updated_at = NOW()
 		WHERE id = $2
-		RETURNING id, full_name, email, password_hash, telegram_chat_id, phone, created_at, updated_at;    
+		RETURNING id, full_name, email, password_hash, telegram, phone, created_at, updated_at;    
 	`
 
 	user := &models.User{}
 
-	err := r.db.QueryRow(ctx, query, phone, userId).Scan(
+	err := r.db.QueryRow(ctx, query, phone, userID).Scan(
 		&user.ID,
 		&user.FullName,
 		&user.Email,
 		&user.PasswordHash,
-		&user.TelegramChatID,
+		&user.Telegram,
 		&user.Phone,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -101,23 +101,23 @@ func (r *userRepo) UpdatePhone(ctx context.Context, userId int64, phone string) 
 	return user, nil
 }
 
-func (r *userRepo) UpdateTelegramChatID(ctx context.Context, userId int64, telegramChatID string) (*models.User, error) {
+func (r *userRepo) UpdateTelegram(ctx context.Context, userID int64, telegram string) (*models.User, error) {
 	query := `
           UPDATE users
-          SET telegram_chat_id = $1,
+          SET telegram = $1,
               updated_at = NOW()
           WHERE id = $2
-          RETURNING id, full_name, email, password_hash, telegram_chat_id, phone, created_at, updated_at;
+          RETURNING id, full_name, email, password_hash, telegram, phone, created_at, updated_at;
 	`
 
 	user := &models.User{}
 
-	err := r.db.QueryRow(ctx, query, telegramChatID, userId).Scan(
+	err := r.db.QueryRow(ctx, query, telegram, userID).Scan(
 		&user.ID,
 		&user.FullName,
 		&user.Email,
 		&user.PasswordHash,
-		&user.TelegramChatID,
+		&user.Telegram,
 		&user.Phone,
 		&user.CreatedAt,
 		&user.UpdatedAt,

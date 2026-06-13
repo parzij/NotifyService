@@ -43,10 +43,12 @@ func main() {
 	userRepo := repository.NewUserRepo(dbPool)
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret, logger)
 	authHandler := handlers.NewAuthHandler(authService)
+	userService := services.NewUserService(userRepo, logger)
+	userHandler := handlers.NewUserHandler(userService)
 
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
-	router.Router(r, authHandler)
+	router.Router(r, authHandler, userHandler)
 
 	srv := &http.Server{
 		Addr:    ":" + port,

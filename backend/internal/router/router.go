@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Router(r *gin.Engine, authHandler *handlers.AuthHandler) {
+func Router(r *gin.Engine, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler) {
 	r.GET("/health", handlers.Health)
 
 	api := r.Group("/api/v1")
@@ -17,6 +17,7 @@ func Router(r *gin.Engine, authHandler *handlers.AuthHandler) {
 
 	user := api.Group("/user")
 	user.Use(authHandler.AuthMiddleware())
-	user.PATCH("/phone", authHandler.UpdatePhone)
-	user.PATCH("/telegram", authHandler.UpdateTelegram)
+	user.PATCH("/phone", userHandler.UpdatePhone)
+	user.PATCH("/telegram", userHandler.UpdateTelegram)
+	user.GET("/profile", userHandler.GetProfile)
 }

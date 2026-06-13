@@ -14,6 +14,7 @@ var ErrUserNotFound = errors.New("user not found")
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *models.User) error
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	GetUserByID(ctx context.Context, userID int64) (*models.User, error)
 	UpdatePhone(ctx context.Context, userID int64, phone string) (*models.User, error)
 	UpdateTelegram(ctx context.Context, userID int64, telegram string) (*models.User, error)
 }
@@ -51,6 +52,34 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*models.Us
 
 	user := &models.User{}
 	err := r.db.QueryRow(ctx, query, email).Scan(
+		&user.ID,
+		&user.FullName,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Telegram,
+		&user.Phone,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *userRepo) GetUserByID(ctx context.Context, userID int64) (*models.User, error) {
+	query := `
+		SELECT id, full_name, email, password_hash, telegram, phone, created_at, updated_at
+		FROM users
+		WHERE id = $1;
+	`
+
+	user := &models.User{}
+	err := r.db.QueryRow(ctx, query, userID).Scan(
 		&user.ID,
 		&user.FullName,
 		&user.Email,
